@@ -105,7 +105,9 @@ function yc_wp_cron_init()
 function yf_clear_monthly()
 {
 	$points_type = 'yf_reward';   // Points type slug
-	$users = get_users();
+	$users = get_users([
+		'number' => '-1'
+	]);
 	foreach ($users as $user) {
 		$user_id = $user->ID;
 		/**
@@ -133,16 +135,21 @@ function yf_member_upgrade()
 {
 	if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
 
+
 	$points_type = 'yf_reward';   // Points type slug
-	$users = get_users();
+
+	$users = get_users([
+		'number' => '-1'
+	]);
 	foreach ($users as $user) {
 		$user_id = $user->ID;
+
 		$time_MemberLVexpire_date = strtotime(get_user_meta($user_id, 'time_MemberLVexpire_date', true));
-		$orderdata_last_year = get_user_meta($user_id, 'orderdata_last_year', true);
+		$orderdata_last_year = get_user_meta($user_id, 'orderdata_last_year', true) ?? [];
 		//會員等級有沒有變動
 		$member_lv_id = yf_get_user_member_lv_id($user_id);
 		//金額判斷
-		$orderamount_last_year = $orderdata_last_year['total'];
+		$orderamount_last_year = $orderdata_last_year['total'] ?? 0;
 
 
 
@@ -157,8 +164,12 @@ function yf_member_upgrade()
 				//如果會員等級為海王妃，則不判斷
 				return;
 			}
+
 			$next_rank_id = gamipress_get_next_user_rank_id($user_id, 'member_lv');
 			$next_rank_threshold = get_post_meta($next_rank_id, 'threshold', true);
+
+
+
 			if ($orderamount_last_year >= (int) $next_rank_threshold) {
 				update_user_memberLV_by_orderamount_last_year($user_id, $orderamount_last_year);
 			}
@@ -217,7 +228,9 @@ function yf_birthday()
 
 
 	$points_type = 'yf_reward';   // Points type slug
-	$users = get_users();
+	$users = get_users([
+		'number' => '-1'
+	]);
 	foreach ($users as $user) {
 		$user_id = $user->ID;
 		yf_birthday_by_user_id($user_id);
@@ -319,7 +332,9 @@ function yf_reward_monthly()
 
 
 	$points_type = 'yf_reward';   // Points type slug
-	$users = get_users();
+	$users = get_users([
+		'number' => '-1'
+	]);
 	foreach ($users as $user) {
 		$user_id = $user->ID;
 		yf_reward_monthly_by_user_id($user_id);
@@ -380,6 +395,3 @@ function allow_monthly_reward($user_id)
 		}
 	}
 }
-
-//debug
-//add_action('wp_head', 'yf_birthday');

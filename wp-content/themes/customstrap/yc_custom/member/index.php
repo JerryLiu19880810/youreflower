@@ -97,13 +97,12 @@ function yc_wp_cron_init()
 	add_action('yf_daily_check', 'yf_clear_monthly', 10);
 	add_action('yf_daily_check', 'yf_member_upgrade', 20);
 	add_action('yf_daily_check', 'yf_birthday', 30);
-
-
 	add_action('yf_daily_check', 'yf_reward_monthly', 40);
 }
 //add_action( 'admin_init', 'yf_birthday' );
 function yf_clear_monthly()
 {
+	if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
 	$points_type = 'yf_reward';   // Points type slug
 	$users = get_users([
 		'number' => '-1'

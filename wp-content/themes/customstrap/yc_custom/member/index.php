@@ -102,7 +102,7 @@ function yc_wp_cron_init()
 //add_action( 'admin_init', 'yf_birthday' );
 function yf_clear_monthly()
 {
-	if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
+	// if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
 	$points_type = 'yf_reward';   // Points typeslug
 	$users = get_users([
 		'number' => '-1'

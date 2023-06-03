@@ -14,8 +14,6 @@
 | 生日禮金       |    100   |    888    |      888     |   888   |     888     |
 +----------------+----------+-----------+--------------+---------+-------------+
 
-$points_type = yf_reward
-
 */
 //定義發放日
 define('REWARD_DAY', '01');
@@ -51,20 +49,7 @@ function yf_default_member_lv($user_id)
 }
 add_action('user_register', 'yf_default_member_lv');
 
-//把沒有會員的人都預設一個會員等級
-// function set_member_if_user_has_no_lv()
-// {
-//     $users = get_users();
-//     foreach ($users as $user) {
-//         $user_id = $user->ID;
-//         $user_lv = get_user_meta($user_id, '_gamipress_member_lv_rank', true);
-//         if (empty($user_lv)) {
-//             update_user_meta($user_id, '_gamipress_member_lv_rank', '713');
-//             update_user_meta($user_id, 'time_MemberLVexpire_date', 'no_expire');
-//         }
-//     }
-// }
-// add_action('init', 'set_member_if_user_has_no_lv');
+
 
 // 判斷使用者等級
 function yf_get_user_member_lv_title($user_id = '')
@@ -89,22 +74,25 @@ function yf_get_user_member_lv_id($user_id = '')
 add_action('init', 'yc_wp_cron_init');
 function yc_wp_cron_init()
 {
+	//只有每月1號才執行
+	if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
+
 	if (!wp_next_scheduled('yf_daily_check')) {
 		wp_schedule_event(time(), 'daily', 'yf_daily_check');
-		//update_option('test_scheduled', 'scheduled' . date('Y-m-d H:i:s'));
 	}
 
 	add_action('yf_daily_check', 'yf_clear_monthly', 10);
 	add_action('yf_daily_check', 'yf_member_upgrade', 20);
+	// 清除已發過的註記
+	// add_action('yf_daily_check', 'clear_last_reward_reward', 25);
 	add_action('yf_daily_check', 'yf_birthday', 30);
-	// add_action('yf_daily_check', 'clear_last_reward_reward', 40);
 	add_action('yf_daily_check', 'yf_reward_monthly', 50);
 }
 //add_action( 'admin_init', 'yf_birthday' );
 // yf_clear_monthly();
 function yf_clear_monthly()
 {
-	// if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
+	//
 	$points_type = 'yf_reward';   // Points typeslug
 	$users = get_users([
 		'number' => '-1',
@@ -134,7 +122,6 @@ function yf_clear_monthly()
 // **當有消費狀態變更時判斷**
 function yf_member_upgrade()
 {
-	if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
 
 
 	$points_type = 'yf_reward';   // Points type slug
@@ -217,14 +204,6 @@ function update_user_memberLV_by_orderamount_last_year($user_id, $orderamount_la
 //生日禮金發放
 function yf_birthday()
 {
-
-	//正式環境，檢查日期
-	if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
-
-
-
-	//update_option('test_fired', 'Fired' .  date('Y-m-d H:i:s'));
-
 
 	$points_type = 'yf_reward';   // Points type slug
 	$users = get_users([
@@ -327,9 +306,6 @@ function allow_bday_reward($user_id)
 function yf_reward_monthly()
 {
 
-	//正式環境，檢查日期
-	if (date('d', time() + 8 * 3600) !== REWARD_DAY) return;
-
 
 	$points_type = 'yf_reward';   // Points type slug
 	$users = get_users([
@@ -406,5 +382,6 @@ function clear_last_reward_reward()
 	foreach ($users as $user) {
 		$user_id = $user->ID;
 		update_user_meta($user_id, 'yf_user_last_reward_monthly_on', '');
+		update_user_meta($user_id, 'yf_user_last_birthday_awarded_on', '');
 	}
 }

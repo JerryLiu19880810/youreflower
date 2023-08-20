@@ -254,26 +254,7 @@ function yf_birthday_by_user_id($user_id, $points_type = 'yf_reward')
 
 function get_birthday_reward_by_member_lv_id($user_member_lv_id)
 {
-	switch ($user_member_lv_id) {
-		case '713': //星沙
-			$points = 100;              // 生日禮金
-			break;
-		case '714': //幸運星
-			$points = 888;              // 生日禮金
-			break;
-		case '725': //母貝
-			$points = 888;              // 生日禮金
-			break;
-		case '726': //美人魚
-			$points = 999;              // 生日禮金
-			break;
-		case '727': //海王妃
-			$points = 1288;              // 生日禮金
-			break;
-		default:
-			$points = 0;              // 生日禮金
-			break;
-	}
+	$points = get_post_meta($user_member_lv_id, 'yf_birthday_reward', true) ?? 0;
 	return $points;
 }
 

@@ -1,22 +1,27 @@
 <?php
 
-/*
-+----------------+----------+-----------+--------------+---------+-------------+
-|                |   星砂   |   幸運星  |     母貝     |  美人魚 |    海王妃   |
-+----------------+----------+-----------+--------------+---------+-------------+
-| member_lv      | customer | luckystar | motheroyster | mermaid | seaprincess |
-+----------------+----------+-----------+--------------+---------+-------------+
-| 升級門檻       |     -    |   滿1萬   |     滿3萬    |  滿5萬  |    滿10萬   |
-+----------------+----------+-----------+--------------+---------+-------------+
-| 每月贈送購物金 |    50    |    199    |      299     |   399   |     599     |
-| 每月到期重銷   |          |           |              |         |             |
-+----------------+----------+-----------+--------------+---------+-------------+
-| 生日禮金       |    100   |    888    |      888     |   888   |     888     |
-+----------------+----------+-----------+--------------+---------+-------------+
 
-*/
 //定義發放日
 define('REWARD_DAY', '01');
+$max_member_lv_id = '';
+
+function set_max_member_lv_id()
+{
+	global $max_member_lv_id;
+	$args = array(
+		'post_type' => 'member_lv',
+		'posts_per_page' => 1,
+		'post_status' => 'publish',
+		'orderby' => 'menu_order',
+		'order' => 'DESC',
+	);
+	$posts = get_posts($args);
+	if (empty($posts) || !is_array($posts)) return;
+
+	$max_member_lv_id = $posts[0]->ID;
+}
+add_action('init', 'set_max_member_lv_id');
+
 
 // 取得生日
 function yc_get_user_birthday()
@@ -147,8 +152,9 @@ function yf_member_upgrade()
 			update_user_memberLV_by_orderamount_last_year($user_id, $orderamount_last_year);
 		} else {
 			//會員資格沒到期
-			//如果消費超過下個門檻才判斷 && 會員等級不等於海王妃 (727)
-			if ($member_lv_id != '727') {
+			//如果消費超過下個門檻才判斷 && 會員等級不等於最高會員等級
+			global $max_member_lv_id;
+			if ($member_lv_id != $max_member_lv_id) {
 				//如果會員等級為海王妃，則不判斷
 				$next_rank_id = gamipress_get_next_user_rank_id($user_id, 'member_lv');
 				$next_rank_threshold = get_post_meta($next_rank_id, 'threshold', true);
@@ -176,26 +182,24 @@ add_action('woocommerce_order_status_changed', 'save_user_orderdata', 10, 3);
 //判斷用戶消費門檻
 function update_user_memberLV_by_orderamount_last_year($user_id, $orderamount_last_year)
 {
-	if ($orderamount_last_year >= (int) get_post_meta(727, 'threshold', true)) {
-		update_user_meta($user_id, '_gamipress_member_lv_rank', '727');
-		update_user_meta($user_id, 'time_MemberLVchanged_last_time', date('Y-m-d H:i:s'));
-		update_user_meta($user_id, 'time_MemberLVexpire_date', date('Y-m-d', strtotime('+1 year')));
-	} elseif ($orderamount_last_year >= (int) get_post_meta(726, 'threshold', true)) {
-		update_user_meta($user_id, '_gamipress_member_lv_rank', '726');
-		update_user_meta($user_id, 'time_MemberLVchanged_last_time', date('Y-m-d H:i:s'));
-		update_user_meta($user_id, 'time_MemberLVexpire_date', date('Y-m-d', strtotime('+1 year')));
-	} elseif ($orderamount_last_year >= (int) get_post_meta(725, 'threshold', true)) {
-		update_user_meta($user_id, '_gamipress_member_lv_rank', '725');
-		update_user_meta($user_id, 'time_MemberLVchanged_last_time', date('Y-m-d H:i:s'));
-		update_user_meta($user_id, 'time_MemberLVexpire_date', date('Y-m-d', strtotime('+1 year')));
-	} elseif ($orderamount_last_year >= (int) get_post_meta(714, 'threshold', true)) {
-		update_user_meta($user_id, '_gamipress_member_lv_rank', '714');
-		update_user_meta($user_id, 'time_MemberLVchanged_last_time', date('Y-m-d H:i:s'));
-		update_user_meta($user_id, 'time_MemberLVexpire_date', date('Y-m-d', strtotime('+1 year')));
-	} else {
-		update_user_meta($user_id, '_gamipress_member_lv_rank', '713');
-		update_user_meta($user_id, 'time_MemberLVchanged_last_time', date('Y-m-d H:i:s'));
-		update_user_meta($user_id, 'time_MemberLVexpire_date', date('Y-m-d', strtotime('+1 year')));
+
+	$args = array(
+		'post_type' => 'member_lv',
+		'posts_per_page' => -1,
+		'post_status' => 'publish',
+		'orderby' => 'meta_value_num',
+		'meta_key' => 'threshold',
+		'order' => 'DESC',
+	);
+	$member_lvs = get_posts($args);
+
+	foreach ($member_lvs as $member_lv) {
+		$member_lv_id = $member_lv->ID;
+		if ($orderamount_last_year >= (int) get_post_meta($member_lv_id, 'threshold', true)) {
+			update_user_meta($user_id, '_gamipress_member_lv_rank', $member_lv_id);
+			update_user_meta($user_id, 'time_MemberLVchanged_last_time', date('Y-m-d H:i:s'));
+			update_user_meta($user_id, 'time_MemberLVexpire_date', date('Y-m-d', strtotime('+1 year')));
+		}
 	}
 }
 

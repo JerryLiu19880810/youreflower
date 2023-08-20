@@ -95,6 +95,7 @@ function yc_wp_cron_init()
 }
 //add_action( 'admin_init', 'yf_birthday' );
 // yf_clear_monthly();
+
 function yf_clear_monthly()
 {
 	//
@@ -155,11 +156,9 @@ function yf_member_upgrade()
 			//如果消費超過下個門檻才判斷 && 會員等級不等於最高會員等級
 			global $max_member_lv_id;
 			if ($member_lv_id != $max_member_lv_id) {
-				//如果會員等級為海王妃，則不判斷
+				//如果會員等級為最高，則不判斷
 				$next_rank_id = gamipress_get_next_user_rank_id($user_id, 'member_lv');
 				$next_rank_threshold = get_post_meta($next_rank_id, 'threshold', true);
-
-
 
 				if ($orderamount_last_year >= (int) $next_rank_threshold) {
 					update_user_memberLV_by_orderamount_last_year($user_id, $orderamount_last_year);
@@ -199,6 +198,7 @@ function update_user_memberLV_by_orderamount_last_year($user_id, $orderamount_la
 			update_user_meta($user_id, '_gamipress_member_lv_rank', $member_lv_id);
 			update_user_meta($user_id, 'time_MemberLVchanged_last_time', date('Y-m-d H:i:s'));
 			update_user_meta($user_id, 'time_MemberLVexpire_date', date('Y-m-d', strtotime('+1 year')));
+			break;
 		}
 	}
 }
@@ -287,15 +287,14 @@ function allow_bday_reward($user_id)
 	}
 }
 
+
+
 //每月購物金發放
 function yf_reward_monthly()
 {
-
-
 	$points_type = 'yf_reward';   // Points type slug
 	$users = get_users([
 		'number' => '-1',
-
 	]);
 	foreach ($users as $user) {
 		$user_id = $user->ID;

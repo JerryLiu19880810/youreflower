@@ -95,6 +95,10 @@ function yc_wp_cron_init()
 }
 //add_action( 'admin_init', 'yf_birthday' );
 // yf_clear_monthly();
+// FIXME 測試用
+yf_member_upgrade();
+yf_birthday();
+yf_reward_monthly();
 
 function yf_clear_monthly()
 {

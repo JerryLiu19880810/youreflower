@@ -47,7 +47,7 @@ function yf_default_member_lv($user_id)
 	$points = 0; //起始購物金
 
 	$args = array(
-		'reason' => "${user_member_lv_title}會員起始購物金 NT$ $points - $user->display_name",
+		'reason' => "$user_member_lv_title 會員起始購物金 NT$ $points - $user->display_name",
 	);
 	// Award the points to the user
 	gamipress_award_points_to_user($user_id, $points, $points_type, $args);
@@ -95,10 +95,10 @@ function yc_wp_cron_init()
 }
 //add_action( 'admin_init', 'yf_birthday' );
 // yf_clear_monthly();
-// FIXME 測試用
-yf_member_upgrade();
-yf_birthday();
-yf_reward_monthly();
+// NOTE 測試用
+// yf_member_upgrade();
+// yf_birthday();
+// yf_reward_monthly();
 
 function yf_clear_monthly()
 {

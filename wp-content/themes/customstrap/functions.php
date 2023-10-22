@@ -10,20 +10,20 @@ include_once('yc_custom/functions.php');
 
 //DEFINE THE MODULES
 $customstrap_includes = array(
-    '/clean-head.php',    // Eliminates useless meta tags, emojis, etc
-    '/enqueues.php',     // Enqueue scripts and styles.
-    '/understrap-tweaks.php', // Overrides theme tags
-    '/customizer-assets/google-fonts.php', //loads an array for the fonts list in Customizer
-    '/customizer-assets/customizer.php',    //Defines Customizer options
-    //'/customizer-assets/scss-compiler.php', //To interface the Customizer with the SCSS php compiler
+	'/clean-head.php',    // Eliminates useless meta tags, emojis, etc
+	'/enqueues.php',     // Enqueue scripts and styles.
+	'/understrap-tweaks.php', // Overrides theme tags
+	'/customizer-assets/google-fonts.php', //loads an array for the fonts list in Customizer
+	'/customizer-assets/customizer.php',    //Defines Customizer options
+	//'/customizer-assets/scss-compiler.php', //To interface the Customizer with the SCSS php compiler
 );
 //INCLUDE THE FILES
 foreach ($customstrap_includes as $file) {
-    $filepath = locate_template('functions' . $file);
-    if (!$filepath) {
-        trigger_error(sprintf('Error locating /inc%s for inclusion', $file), E_USER_ERROR);
-    }
-    require_once $filepath;
+	$filepath = locate_template('functions' . $file);
+	if (!$filepath) {
+		trigger_error(sprintf('Error locating /inc%s for inclusion', $file), E_USER_ERROR);
+	}
+	require_once $filepath;
 }
 
 //OPTIONAL: DISABLE WORDPRESS COMMENTS
@@ -41,7 +41,7 @@ if (get_theme_mod("enable_back_to_top")) require_once locate_template('/function
 
 // LOAD CHILD THEME TEXTDOMAIN
 add_action('after_setup_theme', function () {
-    load_child_theme_textdomain('understrap-child', get_stylesheet_directory() . '/languages');
+	load_child_theme_textdomain('understrap-child', get_stylesheet_directory() . '/languages');
 });
 
 // CUSTOM ADDITIONAL CSS
@@ -52,4 +52,25 @@ add_action('after_setup_theme', function () {
 //add_action( 'wp_enqueue_scripts', 'cs_custom_script_load' );
 //function cs_custom_script_load() {wp_enqueue_script('custom', get_stylesheet_directory_uri() . '/custom.js', array('jquery'), null, true); }
 
+function custom_checkout_script($checkout)
+{
+?>
+	<script>
+		jQuery(document).ready(function($) {
 
+			$('#shipping_phone').val($('#billing_phone').val());
+			$('#shipping_first_name').val($('#billing_first_name').val());
+
+			$('#billing_phone').keyup(function() {
+				$('#shipping_phone').val($('#billing_phone').val());
+			});
+
+			$('#billing_first_name').keyup(function() {
+				$('#shipping_first_name').val($('#billing_first_name').val());
+			});
+
+		});
+	</script>
+<?php
+}
+add_action('woocommerce_after_checkout_form', 'custom_checkout_script');
